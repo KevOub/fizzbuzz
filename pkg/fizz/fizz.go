@@ -1,4 +1,4 @@
-package Fizz
+package fizz
 
 import "fmt"
 
