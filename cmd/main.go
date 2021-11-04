@@ -1,24 +1,47 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
+	"github.com/KevOub/fizzbuzz/pkg/fizz"
 )
 
-func Chunk(n int, offset int) string {
-	var b bytes.Buffer
-	for i := n; i < n+offset; i++ {
-		b.WriteString(Fizz(i))
-		b.WriteString("\n")
-		// fmt.Println(Fizz(i))
-	}
-	return b.String()
-}
+// const (
+// 	numChannels = 500
+// )
+
+// var wg sync.WaitGroup
+
+// func ChunkConcurrent(n int, offset int, ch chan<- string) {
+// 	defer wg.Done()
+// 	var b bytes.Buffer
+// 	for i := n; i < n+offset; i += 5 {
+// 		b.WriteString(fizz.Fizz(i) + "\n")
+// 	}
+// 	ch <- b.String()
+// }
 
 func main() {
-	step := 255
+	// pprof.StartCPUProfile(os.Stdout)
+	// defer pprof.StopCPUProfile()
+	// fizz.ConcurrentTest(2048, 10000)
+	// fmt.Print(fizz.FasterItoaByte(9))
+	// fizz.ConcurrentTest(2048, 10000)
 
-	for i := step; i < 1000000000; i += step {
-		fmt.Print(Chunk(i+step, step))
-	}
+	// fmt.Print([]byte("\n"))
+
+	// logging functions
+	// f, err := os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// if err != nil {
+	// 	log.Fatalf("error opening file: %v", err)
+	// }
+	// defer f.Close()
+
+	// log.SetOutput(f)
+
+	fizz.ConcurrentTestByte(50000, 100000)
+	// timeTrack(time.Now(), "a:")
+
+	// fizz.ConcurrentTestByteCursed(7500*4, 1000000)
+	// fizz.ConcurrentTestByteCursed(100, 1000000)
+	// timeTrack(time.Now(), "b:")
+
 }
