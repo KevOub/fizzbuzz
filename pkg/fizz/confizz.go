@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	numChannels = 1200
-	ChunkSize   = 20
+	numChannels = 1300
+	ChunkSize   = 64
 )
 
 /*

@@ -37,7 +37,7 @@ func main() {
 
 	// log.SetOutput(f)
 
-	fizz.ConcurrentByteFizz(50000, 100000)
+	fizz.ConcurrentByteFizz(15000, 100000)
 	// timeTrack(time.Now(), "a:")
 
 	// fizz.ConcurrentTestByteCursed(7500*4, 1000000)
