@@ -7,8 +7,10 @@ import (
 )
 
 const (
-	numChannels = 1300
+	numChannels = 800
 	ChunkSize   = 64
+	StepSize    = 500
+	BlockSize   = ChunkSize * StepSize
 )
 
 /*
@@ -55,10 +57,36 @@ func ChunkByte(n int, offset int, out chan<- []byte) {
 	for i := n; i < n+offset; i++ {
 		tmp = FizzByte(i)
 		b.Write(tmp[:])
+		// b +=
 
 	}
 
 	out <- b.Bytes()
+}
+
+func ChunkByteFixed(n int, offset int, out chan<- [BlockSize]byte) {
+	defer wg.Done()
+
+	// buffer to write to
+
+	counter := 0
+
+	var b [BlockSize]byte
+	var tmp [ChunkSize]byte
+
+	// go through and calculate fizzbuzz using the byte method
+	for i := n; i < n+offset; i++ {
+		tmp = FizzByte(i)
+		// b.Write(tmp[:])
+		// b +=
+		for j := 0; j < ChunkSize-1; j++ {
+			b[counter+j] = tmp[j]
+		}
+		counter += ChunkSize
+
+	}
+
+	out <- b
 }
 
 func ConcurrentByteFizz(step int, upperlimit int) {
@@ -70,11 +98,43 @@ func ConcurrentByteFizz(step int, upperlimit int) {
 
 	counter := 0
 
-	for i := 0; i < upperlimit; i += 1 {
+	for i := 0; i < upperlimit/numChannels; i += 1 {
 		wg.Add(numChannels)
 
 		for j := 0; j < numChannels*step; j += step {
 			go ChunkByte(j, step, chans[counter])
+			counter++
+		}
+
+		counter = 0
+
+		for j := 0; j < numChannels*step; j += step {
+			output := <-chans[counter]
+			os.Stderr.Write(output[:])
+			counter++
+		}
+		counter = 0
+
+		wg.Wait()
+
+	}
+
+}
+
+func ConcurrentByteFizzFixed(step int, upperlimit int) {
+
+	var chans [numChannels]chan [BlockSize]byte
+	for i := range chans {
+		chans[i] = make(chan [BlockSize]byte)
+	}
+
+	counter := 0
+
+	for i := 0; i < upperlimit; i += 1 {
+		wg.Add(numChannels)
+
+		for j := 0; j < numChannels*step; j += step {
+			go ChunkByteFixed(j, step, chans[counter])
 			counter++
 		}
 

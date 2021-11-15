@@ -36,8 +36,10 @@ func main() {
 	// defer f.Close()
 
 	// log.SetOutput(f)
+	step := fizz.StepSize
 
-	fizz.ConcurrentByteFizz(15000, 100000)
+	// fizz.ConcurrentByteFizz(15000, 100000)
+	fizz.ConcurrentByteFizzFixed(step, 1000000)
 	// timeTrack(time.Now(), "a:")
 
 	// fizz.ConcurrentTestByteCursed(7500*4, 1000000)
