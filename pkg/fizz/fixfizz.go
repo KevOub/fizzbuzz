@@ -1,33 +1,33 @@
 package fizz
 
 import (
-	"bytes"
 	"os"
 	"strconv"
 )
 
-const (
-	STEPSIZE         = 6000
+/* const (
+	NUMCHANNEL       = 10
 	STRINGBUFFERSIZE = 64 // Size of hardcoded bytes value
-	UPPERLIMIT       = 1000000000
-	SCALER           = 1000                             // This number is meant for scaling the number of iterations. This should influence the for loop
-	NUMCHANNEL       = (UPPERLIMIT / SCALER) / STEPSIZE // divide the goal by the scaler then the size of each step to create art
+	StepSize         = 10
+	// BlockSize = STRINGBUFFERSIZE * StepSize
+)
+*/
+const (
+	BlockSize = STRINGBUFFERSIZE * STEPSIZE
 )
 
 /*
-The concurrent portion of testing
+The concurrent portion of testing. Made the fixed version remove the new line thingy
 */
-
-// Utilizes set []byte sizes to reduce memory allocations
-func FizzByte(n int) [STRINGBUFFERSIZE]byte {
+func FizzByteFixed(n int) [STRINGBUFFERSIZE]byte {
 	// Since this bypasses string allocation, it improves performances
 	// String processing in go is heavy
 	if n%3 == 0 && n%5 == 0 {
-		return [STRINGBUFFERSIZE]byte{70, 105, 122, 122, 98, 117, 122, 122, 10}
+		return [STRINGBUFFERSIZE]byte{70, 105, 122, 122, 98, 117, 122, 122}
 	} else if n%3 == 0 {
-		return [STRINGBUFFERSIZE]byte{66, 117, 122, 122, 32, 32, 32, 32, 10}
+		return [STRINGBUFFERSIZE]byte{66, 117, 122, 122, 32, 32, 32, 32}
 	} else if n%5 == 0 {
-		return [STRINGBUFFERSIZE]byte{70, 105, 122, 122, 32, 32, 32, 32, 10}
+		return [STRINGBUFFERSIZE]byte{70, 105, 122, 122, 32, 32, 32, 32}
 	} else {
 		// This is good enough to convert the integer to a string
 		number := strconv.Itoa(n)
@@ -40,36 +40,44 @@ func FizzByte(n int) [STRINGBUFFERSIZE]byte {
 			}
 		}
 		// create a new line at the end
-		output[STRINGBUFFERSIZE-1] = 10
+		// output[STRINGBUFFERSIZE-1] = 10
 		return output
 	}
 
 }
 
-// Goes through iteratively with the strings being pre-compiled
-func ChunkByte(n int, offset int, out chan<- []byte) {
+func ChunkByteFixed(n int, offset int, out chan<- *[BlockSize]byte) {
 	defer wg.Done()
 
 	// buffer to write to
-	var b bytes.Buffer
+
+	counter := 0
+
+	var b [BlockSize]byte
 	var tmp [STRINGBUFFERSIZE]byte
 
 	// go through and calculate fizzbuzz using the byte method
 	for i := n; i < n+offset; i++ {
-		tmp = FizzByte(i)
-		b.Write(tmp[:])
+		tmp = FizzByteFixed(i)
+
+		// b.Write(tmp[:])
 		// b +=
+		for j := 0; j < STRINGBUFFERSIZE-2; j++ {
+			b[counter+j] = tmp[j]
+		}
+		b[counter+STRINGBUFFERSIZE-1] = 10
+		counter += (STRINGBUFFERSIZE)
 
 	}
 
-	out <- b.Bytes()
+	out <- &b
 }
 
-func ConcurrentByteFizz(step int, upperlimit int) {
+func ConcurrentByteFizzFixed(step int, upperlimit int) {
 
-	var chans [NUMCHANNEL]chan []byte
+	var chans [NUMCHANNEL]chan *[BlockSize]byte
 	for i := range chans {
-		chans[i] = make(chan []byte)
+		chans[i] = make(chan *[BlockSize]byte)
 	}
 
 	counter := 0
@@ -80,7 +88,7 @@ func ConcurrentByteFizz(step int, upperlimit int) {
 		wg.Add(NUMCHANNEL)
 
 		for j := i; j < NUMCHANNEL*step+i; j += step {
-			go ChunkByte(j, step, chans[counter])
+			go ChunkByteFixed(j, step, chans[counter])
 			counter++
 		}
 
@@ -88,7 +96,7 @@ func ConcurrentByteFizz(step int, upperlimit int) {
 
 		for j := 0; j < NUMCHANNEL*step; j += step {
 			output := <-chans[counter]
-			os.Stderr.Write(output[:])
+			os.Stdout.Write((*output)[:])
 			counter++
 		}
 		counter = 0

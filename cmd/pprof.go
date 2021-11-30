@@ -11,7 +11,9 @@ func main() {
 	pprof.StartCPUProfile(os.Stdout)
 	defer pprof.StopCPUProfile()
 
-	step := fizz.StepSize
-	fizz.ConcurrentByteFizz(step, 10000)
+	step := fizz.STEPSIZE
+	up := fizz.UPPERLIMIT
+
+	fizz.ConcurrentByteFizzFixed(step, up)
 
 }
