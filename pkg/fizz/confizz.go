@@ -10,7 +10,7 @@ const (
 	STEPSIZE         = 6000
 	STRINGBUFFERSIZE = 64 // Size of hardcoded bytes value
 	UPPERLIMIT       = 1000000000
-	SCALER           = 1000                             // This number is meant for scaling the number of iterations. This should influence the for loop
+	SCALER           = 100                              // This number is meant for scaling the number of iterations. This should influence the for loop
 	NUMCHANNEL       = (UPPERLIMIT / SCALER) / STEPSIZE // divide the goal by the scaler then the size of each step to create art
 )
 
@@ -88,7 +88,7 @@ func ConcurrentByteFizz(step int, upperlimit int) {
 
 		for j := 0; j < NUMCHANNEL*step; j += step {
 			output := <-chans[counter]
-			os.Stderr.Write(output[:])
+			os.Stdout.Write(output[:])
 			counter++
 		}
 		counter = 0
