@@ -44,7 +44,8 @@ func main() {
 
 	// fizz.ConcurrentByteFizz(15000, 100000)
 	// fizz.ConcurrentByteFizz(step, 10000)
-	fizz.ConcurrentByteFizzFixed(step, up)
+	// fizz.ConcurrentByteFizzFixed(step, up)
+	fizz.ConcurrentByteYesFixed(step, up)
 	// timeTrack(time.Now(), "a:")
 
 	// fizz.ConcurrentTestByteCursed(7500*4, 1000000)

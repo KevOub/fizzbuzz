@@ -1,50 +1,81 @@
 package fizz
 
 import (
-	"bytes"
 	"os"
 )
 
-// seeing *maximum throughput* of golang by printing yes
-func Yes(n int) [STRINGBUFFERSIZE]byte {
+/* const (
+	NUMCHANNEL       = 10
+	STRINGBUFFERSIZE = 64 // Size of hardcoded bytes value
+	StepSize         = 10
+	// BlockSize = STRINGBUFFERSIZE * StepSize
+)
+*/
+/*
+The concurrent portion of testing. Made the fixed version remove the new line thingy
+*/
+func YesByteFixed(n int) [STRINGBUFFERSIZE]byte {
 	// Since this bypasses string allocation, it improves performances
 	// String processing in go is heavy
 	return [STRINGBUFFERSIZE]byte{121, 10}
+
 }
 
-// Goes through iteratively with the strings being pre-compiled
-func ChunkByteYes(n int, offset int) []byte {
+func ChunkByteFixedYes(n int, offset int, out chan<- *[BlockSize]byte) {
 	defer wg.Done()
 
 	// buffer to write to
-	var b bytes.Buffer
+
+	counter := 0
+
+	var b [BlockSize]byte
 	var tmp [STRINGBUFFERSIZE]byte
 
 	// go through and calculate fizzbuzz using the byte method
 	for i := n; i < n+offset; i++ {
-		tmp = Yes(i)
-		b.Write(tmp[:])
+		tmp = YesByteFixed(i)
+
+		// b.Write(tmp[:])
+		// b +=
+		for j := 0; j < STRINGBUFFERSIZE-2; j++ {
+			b[counter+j] = tmp[j]
+		}
+		//b[counter+STRINGBUFFERSIZE-1] = 10
+		counter += (STRINGBUFFERSIZE)
 
 	}
 
-	return b.Bytes()
+	out <- &b
 }
 
-func ConcurrentByteYes(step int, upperlimit int) {
+func ConcurrentByteYesFixed(step int, upperlimit int) {
 
-	var chans [NUMCHANNEL]chan []byte
+	var chans [NUMCHANNEL]chan *[BlockSize]byte
 	for i := range chans {
-		chans[i] = make(chan []byte)
+		chans[i] = make(chan *[BlockSize]byte)
 	}
 
-	for i := 0; i < upperlimit; i += 1 {
+	counter := 0
+	// totalOffset := 0
+
+	for i := 0; i < upperlimit; i += (NUMCHANNEL * step) {
+
 		wg.Add(NUMCHANNEL)
 
-		for j := 0; j < NUMCHANNEL*step; j += step {
-			// go ChunkByteYes(j, step, chans[counter])
-			go os.Stdout.Write(ChunkByteYes(j, step))
-
+		for j := i; j < NUMCHANNEL*step+i; j += step {
+			go ChunkByteFixedYes(j, step, chans[counter])
+			counter++
 		}
+
+		counter = 0
+
+		for j := 0; j < NUMCHANNEL*step; j += step {
+			output := <-chans[counter]
+			os.Stdout.Write((*output)[:])
+			counter++
+		}
+
+		counter = 0
 
 		wg.Wait()
 

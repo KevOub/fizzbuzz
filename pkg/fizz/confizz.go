@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	STEPSIZE         = 6000
+	STEPSIZE         = 1500 * 4
 	STRINGBUFFERSIZE = 64 // Size of hardcoded bytes value
 	UPPERLIMIT       = 1000000000
 	SCALER           = 100                              // This number is meant for scaling the number of iterations. This should influence the for loop
@@ -22,11 +22,13 @@ The concurrent portion of testing
 func FizzByte(n int) [STRINGBUFFERSIZE]byte {
 	// Since this bypasses string allocation, it improves performances
 	// String processing in go is heavy
-	if n%3 == 0 && n%5 == 0 {
+	DivByThree := (n%3 == 0)
+	DivByFive := (n%5 == 0)
+	if DivByThree && DivByFive {
 		return [STRINGBUFFERSIZE]byte{70, 105, 122, 122, 98, 117, 122, 122, 10}
-	} else if n%3 == 0 {
+	} else if DivByThree {
 		return [STRINGBUFFERSIZE]byte{66, 117, 122, 122, 32, 32, 32, 32, 10}
-	} else if n%5 == 0 {
+	} else if DivByFive {
 		return [STRINGBUFFERSIZE]byte{70, 105, 122, 122, 32, 32, 32, 32, 10}
 	} else {
 		// This is good enough to convert the integer to a string
